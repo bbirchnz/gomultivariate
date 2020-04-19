@@ -1,2 +1,3 @@
 # gomultivariate
-Multivariate optimisation for Go
+WIP: Multivariate optimisation for Go
+
