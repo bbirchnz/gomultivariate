@@ -8,4 +8,4 @@ type Optimiser interface {
 }
 
 // CostFunction is a function that takes a possible solution and returns its "cost" as a float32
-type CostFunction func(vector.Vector32) float32
+type CostFunction func(*vector.Vector32) float32

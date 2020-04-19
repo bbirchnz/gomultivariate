@@ -10,6 +10,9 @@ import (
 	"github.com/bbirchnz/gomultivariate/vector"
 )
 
+var bestVector vector.Vector32
+var cost float32
+
 func TestNewPSO(t *testing.T) {
 	type args struct {
 		vectorSize       int
@@ -69,10 +72,10 @@ func TestPSO_Run(t *testing.T) {
 	}{
 		{
 			name: "Solve X^2 + Y^2",
-			pso:  NewPSO(2, 150, 0.4, 2, 1.5, vector.Vector32{-1, -1}, vector.Vector32{1, 1}),
+			pso:  NewPSO(2, 150, 0.4, 2, 1.5, vector.Vector32{-10, -10}, vector.Vector32{10, 10}),
 			args: args{
-				costFunction: func(v vector.Vector32) float32 {
-					return float32(math.Pow(float64(v[0]), 2) + math.Pow(float64(v[1]), 2))
+				costFunction: func(v *vector.Vector32) float32 {
+					return float32(math.Pow(float64((*v)[0]), 2) + math.Pow(float64((*v)[1]), 2))
 				},
 				maxIterations: 100,
 				targetCost:    0.1,
@@ -97,4 +100,17 @@ func TestPSO_Run(t *testing.T) {
 			}
 		})
 	}
+}
+
+func BenchmarkSimpleSolve(b *testing.B) {
+	pso := NewPSO(2, 150, 0.4, 2, 1.5, vector.Vector32{-10, -10}, vector.Vector32{10, 10})
+	costFunction := func(v *vector.Vector32) float32 {
+		return float32(math.Pow(float64((*v)[0]), 2) + math.Pow(float64((*v)[1]), 2))
+	}
+	var v vector.Vector32
+	var c float32
+	for n := 0; n < b.N; n++ {
+		v, c = pso.Run(costFunction, 150, 0.0001)
+	}
+	bestVector, cost = v, c
 }

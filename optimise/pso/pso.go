@@ -68,8 +68,13 @@ func NewPSO(
 func (pso *PSO) Run(costFunction optimise.CostFunction, maxIterations int, targetCost float32) (best vector.Vector32, lowestCost float32) {
 
 	pso.initialiseParticles()
+
+	// setup channels for parallel cost calculating (create once per run)
+	chanCostJobs := make(chan int, pso.particleCount)
+
 	// calculate initial costs and global bests
-	pso.calculateCosts(costFunction)
+	pso.calculateCosts(&costFunction, &chanCostJobs)
+
 	// start iteratively improving them:
 	for i := 0; i < maxIterations; i++ { // swarm update iteration
 		if pso.globalLowestCost < targetCost {
@@ -98,7 +103,7 @@ func (pso *PSO) Run(costFunction optimise.CostFunction, maxIterations int, targe
 			}
 		}
 		// now calculate all particle costs and update bests:
-		pso.calculateCosts(costFunction)
+		pso.calculateCosts(&costFunction, &chanCostJobs)
 	}
 	return pso.globalLowestCostPosition, pso.globalLowestCost
 }
@@ -122,21 +127,21 @@ func (pso *PSO) initialiseParticles() {
 }
 
 // calculateCosts calculates costs for particles in parallel based on current position
-func (pso *PSO) calculateCosts(costFunction optimise.CostFunction) {
-	done := make(chan int, pso.particleCount)
+func (pso *PSO) calculateCosts(costFunction *optimise.CostFunction, costChannel *chan int) {
+	// done := make(chan int, pso.particleCount)
 	for p := 0; p < pso.particleCount; p++ {
 		go func(p int, pso *PSO) {
-			cost := costFunction(pso.positions[p])
+			cost := (*costFunction)(&pso.positions[p])
 			if cost < pso.lowestCosts[p] {
 				pso.lowestCosts[p] = cost
 				pso.lowestCostPositions[p] = pso.positions[p]
 			}
-			done <- 1
+			*costChannel <- 1
 		}(p, pso)
 	}
 	// wait for all:
 	for p := 0; p < pso.particleCount; p++ {
-		<-done
+		<-*costChannel
 	}
 	// update global cost and best position
 	for p := 0; p < pso.particleCount; p++ {
