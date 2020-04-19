@@ -5,8 +5,8 @@ import "fmt"
 // Vector32 represents a float32 vector
 type Vector32 []float32
 
-// NewVector returns a new vector with size {size} and all elements set to {value}
-func NewVector(size int, value float32) Vector32 {
+// NewVector32 returns a new vector with size {size} and all elements set to {value}
+func NewVector32(size int, value float32) Vector32 {
 	v := make([]float32, size)
 	for i := range v {
 		v[i] = value
