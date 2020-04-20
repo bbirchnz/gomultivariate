@@ -1,6 +1,9 @@
 package vector
 
-import "fmt"
+import (
+	"fmt"
+	"math/rand"
+)
 
 // Vector32 represents a float32 vector
 type Vector32 []float32
@@ -14,28 +17,14 @@ func NewVector32(size int, value float32) Vector32 {
 	return v
 }
 
-// Add does element wise addition of a + b
-func (a Vector32) Add(b Vector32) Vector32 {
-	for i, value := range a {
-		a[i] = value + b[i]
+// NewRandomVector32 returns a new vector with size {size} where each element is random
+// between vectorMins and vectorMaxs
+func NewRandomVector32(size int, vectorMins Vector32, vectorMaxs Vector32) Vector32 {
+	v := make([]float32, size)
+	for i := range v {
+		v[i] = vectorMins[i] + rand.Float32()*(vectorMaxs[i]-vectorMins[i])
 	}
-	return a
-}
-
-// Sub does element wise subtraction of a - b
-func (a Vector32) Sub(b Vector32) Vector32 {
-	for i, value := range a {
-		a[i] = value - b[i]
-	}
-	return a
-}
-
-// Mul does element wise multiplication of a * b
-func (a Vector32) Mul(b Vector32) Vector32 {
-	for i, value := range a {
-		a[i] = value * b[i]
-	}
-	return a
+	return v
 }
 
 // Max returns maximum value in vector a

@@ -1,3 +1,4 @@
+// Package pso is an implementation of particle swarm optimisation
 package pso
 
 import (
@@ -8,8 +9,8 @@ import (
 	"github.com/bbirchnz/gomultivariate/vector"
 )
 
-// PSO defines a Particle Swarm Optimiser
-type PSO struct {
+// Optimiser defines a Particle Swarm Optimiser
+type Optimiser struct {
 	// minimum allowed value for each element
 	vectorMins vector.Vector32
 	// maximum allowed value for each element
@@ -37,17 +38,17 @@ type PSO struct {
 	localBestFactor  float32
 }
 
-// NewPSO initialises and returns a PSO
-func NewPSO(
+// NewOptimiser initialises and returns a PSO
+func NewOptimiser(
 	vectorSize int,
 	particleCount int,
 	inertiaFactor float32,
 	globalBestFactor float32,
 	localBestFactor float32,
 	vectorMins vector.Vector32,
-	vectorMaxs vector.Vector32) *PSO {
+	vectorMaxs vector.Vector32) *Optimiser {
 
-	return &PSO{
+	return &Optimiser{
 		positions:                make([]vector.Vector32, particleCount),
 		velocities:               make([]vector.Vector32, particleCount),
 		lowestCostPositions:      make([]vector.Vector32, particleCount),
@@ -65,7 +66,7 @@ func NewPSO(
 }
 
 // Run executes an optimisation pass, iterating until maxIterations or targetCost is achieved
-func (pso *PSO) Run(costFunction optimise.CostFunction, maxIterations int, targetCost float32) (best vector.Vector32, lowestCost float32) {
+func (pso *Optimiser) Run(costFunction optimise.CostFunction, maxIterations int, targetCost float32) (best vector.Vector32, lowestCost float32) {
 
 	pso.initialiseParticles()
 
@@ -81,6 +82,8 @@ func (pso *PSO) Run(costFunction optimise.CostFunction, maxIterations int, targe
 			break
 		}
 		for p := 0; p < pso.particleCount; p++ { // particle
+			randLocal := rand.Float32()
+			randGlobal := rand.Float32()
 			for e := 0; e < pso.vectorSize; e++ { // element
 				// if on the limits, reverse velocity
 				if pso.positions[p][e] == pso.vectorMaxs[e] || pso.positions[p][e] == pso.vectorMins[e] {
@@ -89,8 +92,8 @@ func (pso *PSO) Run(costFunction optimise.CostFunction, maxIterations int, targe
 
 				// update velocity:
 				pso.velocities[p][e] = pso.inertiaFactor*pso.velocities[p][e] +
-					rand.Float32()*pso.localBestFactor*(pso.lowestCostPositions[p][e]-pso.positions[p][e]) +
-					rand.Float32()*pso.globalBestFactor*(pso.globalLowestCostPosition[e]-pso.positions[p][e])
+					randLocal*pso.localBestFactor*(pso.lowestCostPositions[p][e]-pso.positions[p][e]) +
+					randGlobal*pso.globalBestFactor*(pso.globalLowestCostPosition[e]-pso.positions[p][e])
 				// update position:
 				pso.positions[p][e] = pso.positions[p][e] + pso.velocities[p][e]
 				// cap on min/max
@@ -109,7 +112,7 @@ func (pso *PSO) Run(costFunction optimise.CostFunction, maxIterations int, targe
 }
 
 // initialiseParticles generates initial particle positions and velocities
-func (pso *PSO) initialiseParticles() {
+func (pso *Optimiser) initialiseParticles() {
 	for p := 0; p < pso.particleCount; p++ {
 		position := vector.NewVector32(pso.vectorSize, 0)
 		velocity := vector.NewVector32(pso.vectorSize, 0)
@@ -127,10 +130,10 @@ func (pso *PSO) initialiseParticles() {
 }
 
 // calculateCosts calculates costs for particles in parallel based on current position
-func (pso *PSO) calculateCosts(costFunction *optimise.CostFunction, costChannel *chan int) {
+func (pso *Optimiser) calculateCosts(costFunction *optimise.CostFunction, costChannel *chan int) {
 	// done := make(chan int, pso.particleCount)
 	for p := 0; p < pso.particleCount; p++ {
-		go func(p int, pso *PSO) {
+		go func(p int, pso *Optimiser) {
 			cost := (*costFunction)(&pso.positions[p])
 			if cost < pso.lowestCosts[p] {
 				pso.lowestCosts[p] = cost

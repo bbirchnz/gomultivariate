@@ -1,72 +1,10 @@
 package vector
 
 import (
+	"math/rand"
 	"reflect"
 	"testing"
 )
-
-func TestVector32_Add(t *testing.T) {
-	type args struct {
-		b Vector32
-	}
-	tests := []struct {
-		name string
-		a    Vector32
-		args args
-		want Vector32
-	}{
-		{a: Vector32{1, 2, 3}, args: args{b: Vector32{4, 5, 6}}, want: Vector32{5, 7, 9}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.a.Add(tt.args.b); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Vector.Add() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestVector32_Sub(t *testing.T) {
-	type args struct {
-		b Vector32
-	}
-	tests := []struct {
-		name string
-		a    Vector32
-		args args
-		want Vector32
-	}{
-		{a: Vector32{1, 2, 3}, args: args{b: Vector32{4, 5, 6}}, want: Vector32{-3, -3, -3}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.a.Sub(tt.args.b); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Vector.Sub() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestVector32_Mul(t *testing.T) {
-	type args struct {
-		b Vector32
-	}
-	tests := []struct {
-		name string
-		a    Vector32
-		args args
-		want Vector32
-	}{
-		{a: Vector32{1, 2, 3}, args: args{b: Vector32{4, 5, 6}}, want: Vector32{4, 10, 18}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := tt.a.Mul(tt.args.b); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Vector.Mul() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
 
 func TestVector32_Max(t *testing.T) {
 	tests := []struct {
@@ -121,7 +59,7 @@ func TestVector32_String(t *testing.T) {
 	}
 }
 
-func TestNewVector(t *testing.T) {
+func TestNewVector32(t *testing.T) {
 	type args struct {
 		size  int
 		value float32
@@ -137,6 +75,32 @@ func TestNewVector(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := NewVector32(tt.args.size, tt.args.value); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("NewVector() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNewRandomVector32(t *testing.T) {
+	rand.Seed(1)
+
+	type args struct {
+		size       int
+		vectorMins Vector32
+		vectorMaxs Vector32
+	}
+	tests := []struct {
+		name string
+		args args
+		want Vector32
+	}{
+		{args: args{2, Vector32{-1, -1}, Vector32{1, 1}}, want: Vector32{rand.Float32()*2 - 1, rand.Float32()*2 - 1}},
+	}
+	// reinit to get the same series
+	rand.Seed(1)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewRandomVector32(tt.args.size, tt.args.vectorMins, tt.args.vectorMaxs); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewRandomVector32() = %v, want %v", got, tt.want)
 			}
 		})
 	}

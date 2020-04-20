@@ -13,7 +13,7 @@ import (
 var bestVector vector.Vector32
 var cost float32
 
-func TestNewPSO(t *testing.T) {
+func TestNewOptimiser(t *testing.T) {
 	type args struct {
 		vectorSize       int
 		particleCount    int
@@ -26,11 +26,11 @@ func TestNewPSO(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want *PSO
+		want *Optimiser
 	}{
 		{
 			args: args{5, 10, 1, 1, 1, vector.Vector32{0, 0, 0, 0, 0}, vector.Vector32{1, 1, 1, 1, 1}},
-			want: &PSO{
+			want: &Optimiser{
 				vectorMaxs:               vector.Vector32{1, 1, 1, 1, 1},
 				vectorMins:               vector.Vector32{0, 0, 0, 0, 0},
 				particleCount:            10,
@@ -49,8 +49,8 @@ func TestNewPSO(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := NewPSO(tt.args.vectorSize, tt.args.particleCount, tt.args.inertiaFactor, tt.args.globalBestFactor, tt.args.localBestFactor, tt.args.vectorMins, tt.args.vectorMaxs); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("NewPSO() = %v, want %v", got, tt.want)
+			if got := NewOptimiser(tt.args.vectorSize, tt.args.particleCount, tt.args.inertiaFactor, tt.args.globalBestFactor, tt.args.localBestFactor, tt.args.vectorMins, tt.args.vectorMaxs); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewOptimiser() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -64,7 +64,7 @@ func TestPSO_Run(t *testing.T) {
 	}
 	tests := []struct {
 		name           string
-		pso            *PSO
+		pso            *Optimiser
 		args           args
 		wantBestMax    vector.Vector32
 		wantBestMin    vector.Vector32
@@ -72,7 +72,7 @@ func TestPSO_Run(t *testing.T) {
 	}{
 		{
 			name: "Solve X^2 + Y^2",
-			pso:  NewPSO(2, 150, 0.4, 2, 1.5, vector.Vector32{-10, -10}, vector.Vector32{10, 10}),
+			pso:  NewOptimiser(2, 150, 0.4, 2, 1.5, vector.Vector32{-10, -10}, vector.Vector32{10, 10}),
 			args: args{
 				costFunction: func(v *vector.Vector32) float32 {
 					return float32(math.Pow(float64((*v)[0]), 2) + math.Pow(float64((*v)[1]), 2))
@@ -103,7 +103,7 @@ func TestPSO_Run(t *testing.T) {
 }
 
 func BenchmarkSimpleSolve(b *testing.B) {
-	pso := NewPSO(2, 150, 0.4, 2, 1.5, vector.Vector32{-10, -10}, vector.Vector32{10, 10})
+	pso := NewOptimiser(2, 150, 0.4, 2, 1.5, vector.Vector32{-10, -10}, vector.Vector32{10, 10})
 	costFunction := func(v *vector.Vector32) float32 {
 		return float32(math.Pow(float64((*v)[0]), 2) + math.Pow(float64((*v)[1]), 2))
 	}
